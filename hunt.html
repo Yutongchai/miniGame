@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EITO Hunt</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --gold: #fcb22f;
+    --navy: #103C61;
+    --navy-light: #1a5080;
+    --navy-dark: #0a2540;
+    --white: #ffffff;
+    --gray: #f4f6f9;
+    --text: #1a1a2e;
+    --muted: #6b7a90;
+    --card-bg: #ffffff;
+    --success: #22c55e;
+    --danger: #ef4444;
+    --rank1: #fcb22f;
+    --rank2: #a8b5c8;
+    --rank3: #cd8b60;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--navy-dark);
+    color: var(--white);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── NAV ── */
+  nav {
+    background: var(--navy-dark);
+    border-bottom: 2px solid var(--gold);
+    padding: 0 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 56px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .logo { font-family: 'Bebas Neue', sans-serif; font-size: 1.6rem; color: var(--gold); letter-spacing: 3px; }
+  .logo span { color: var(--white); }
+  .nav-user { display: flex; align-items: center; gap: 10px; font-size: 0.8rem; color: var(--muted); }
+  .nav-avatar {
+    width: 32px; height: 32px; border-radius: 50%;
+    background: var(--gold); color: var(--navy-dark);
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 0.75rem;
+  }
+
+  /* ── SCREENS ── */
+  .screen { display: none; animation: fadeIn 0.35s ease; }
+  .screen.active { display: block; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* ── TABS ── */
+  .tab-bar {
+    display: flex;
+    background: var(--navy);
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .tab-bar::-webkit-scrollbar { display: none; }
+  .tab-btn {
+    flex: 1; min-width: 80px;
+    padding: 0.75rem 0.5rem;
+    border: none; background: none;
+    color: var(--muted); font-family: 'DM Sans', sans-serif;
+    font-size: 0.72rem; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 0.5px; cursor: pointer;
+    border-bottom: 3px solid transparent;
+    transition: all 0.2s; white-space: nowrap;
+  }
+  .tab-btn.active { color: var(--gold); border-bottom-color: var(--gold); }
+  .tab-btn:hover:not(.active) { color: var(--white); }
+
+  /* ── LOGIN SCREEN ── */
+  .login-wrap {
+    min-height: calc(100vh - 56px);
+    display: flex; align-items: center; justify-content: center;
+    padding: 2rem 1rem;
+    background: radial-gradient(ellipse at 60% 0%, rgba(252,178,47,0.12) 0%, transparent 60%),
+                radial-gradient(ellipse at 0% 80%, rgba(16,60,97,0.8) 0%, transparent 50%),
+                var(--navy-dark);
+  }
+  .login-card {
+    background: var(--navy);
+    border: 1px solid rgba(252,178,47,0.3);
+    border-radius: 16px;
+    padding: 2.5rem 2rem;
+    width: 100%; max-width: 400px;
+    box-shadow: 0 24px 60px rgba(0,0,0,0.5);
+  }
+  .login-icon {
+    width: 64px; height: 64px;
+    background: linear-gradient(135deg, var(--gold), #e8960a);
+    border-radius: 16px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.8rem; margin: 0 auto 1.5rem;
+    box-shadow: 0 8px 24px rgba(252,178,47,0.4);
+  }
+  .login-title { font-family: 'Bebas Neue', sans-serif; font-size: 2.2rem; text-align: center; color: var(--white); letter-spacing: 2px; }
+  .login-sub { text-align: center; color: var(--muted); font-size: 0.85rem; margin: 0.4rem 0 1.8rem; }
+  .form-group { margin-bottom: 1rem; }
+  .form-group label { display: block; font-size: 0.75rem; font-weight: 600; color: var(--gold); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.4rem; }
+  .form-group input {
+    width: 100%; padding: 0.75rem 1rem;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 10px; color: var(--white);
+    font-family: 'DM Sans', sans-serif; font-size: 0.9rem;
+    transition: border-color 0.2s;
+  }
+  .form-group input:focus { outline: none; border-color: var(--gold); background: rgba(252,178,47,0.05); }
+  .form-group input::placeholder { color: rgba(255,255,255,0.25); }
+  .btn-primary {
+    width: 100%; padding: 0.85rem;
+    background: linear-gradient(135deg, var(--gold), #e8960a);
+    border: none; border-radius: 10px;
+    color: var(--navy-dark); font-family: 'DM Sans', sans-serif;
+    font-weight: 700; font-size: 0.95rem; cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+    letter-spacing: 0.3px;
+  }
+  .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(252,178,47,0.4); }
+  .btn-primary:active { transform: translateY(0); }
+  .verify-note { text-align: center; margin-top: 1rem; font-size: 0.78rem; color: var(--muted); }
+  .verify-code {
+    display: flex; gap: 8px; justify-content: center; margin: 1rem 0;
+  }
+  .verify-code input {
+    width: 48px; height: 56px; text-align: center;
+    font-size: 1.4rem; font-weight: 700; border-radius: 10px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.12);
+    color: var(--white);
+  }
+  .verify-code input:focus { outline: none; border-color: var(--gold); }
+
+  /* ── MAIN CONTENT ── */
+  .content { padding: 1.25rem; max-width: 600px; margin: 0 auto; }
+
+  /* ── LEADERBOARD ── */
+  .lb-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 1.25rem;
+  }
+  .lb-title { font-family: 'Bebas Neue', sans-serif; font-size: 1.6rem; letter-spacing: 2px; color: var(--gold); }
+  .live-badge {
+    display: flex; align-items: center; gap: 6px;
+    background: rgba(34,197,94,0.15); border: 1px solid rgba(34,197,94,0.3);
+    border-radius: 20px; padding: 4px 10px;
+    font-size: 0.7rem; font-weight: 600; color: var(--success); text-transform: uppercase;
+  }
+  .live-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--success); animation: pulse 1.5s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(1.3)} }
+
+  .podium { display: flex; align-items: flex-end; justify-content: center; gap: 12px; margin-bottom: 1.5rem; }
+  .podium-item {
+    display: flex; flex-direction: column; align-items: center;
+    flex: 1; max-width: 110px;
+  }
+  .podium-avatar {
+    width: 52px; height: 52px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 1.1rem; margin-bottom: 8px;
+    border: 3px solid;
+    position: relative;
+  }
+  .podium-item:nth-child(1) .podium-avatar { border-color: var(--rank2); background: rgba(168,181,200,0.2); width: 44px; height: 44px; font-size: 0.9rem; }
+  .podium-item:nth-child(2) .podium-avatar { border-color: var(--rank1); background: rgba(252,178,47,0.2); width: 60px; height: 60px; font-size: 1.2rem; }
+  .podium-item:nth-child(3) .podium-avatar { border-color: var(--rank3); background: rgba(205,139,96,0.2); width: 44px; height: 44px; font-size: 0.9rem; }
+  .crown { position: absolute; top: -14px; font-size: 1rem; }
+  .podium-name { font-weight: 600; font-size: 0.78rem; text-align: center; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 100%; }
+  .podium-score { font-family: 'Bebas Neue', sans-serif; font-size: 1.1rem; letter-spacing: 1px; }
+  .podium-item:nth-child(2) .podium-score { font-size: 1.3rem; color: var(--gold); }
+  .podium-block {
+    width: 100%; border-radius: 8px 8px 0 0;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Bebas Neue', sans-serif; font-size: 1.4rem; padding: 8px 0;
+  }
+  .podium-item:nth-child(1) .podium-block { background: rgba(168,181,200,0.25); height: 48px; color: var(--rank2); }
+  .podium-item:nth-child(2) .podium-block { background: rgba(252,178,47,0.25); height: 72px; color: var(--rank1); }
+  .podium-item:nth-child(3) .podium-block { background: rgba(205,139,96,0.25); height: 36px; color: var(--rank3); }
+
+  .lb-list { display: flex; flex-direction: column; gap: 8px; }
+  .lb-row {
+    display: flex; align-items: center; gap: 12px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 12px; padding: 0.75rem 1rem;
+    transition: background 0.2s;
+    animation: slideIn 0.4s ease both;
+  }
+  .lb-row:hover { background: rgba(255,255,255,0.07); }
+  @keyframes slideIn { from { opacity:0; transform:translateX(-12px); } to { opacity:1; transform:translateX(0); } }
+  .lb-rank {
+    width: 28px; height: 28px; border-radius: 8px;
+    background: rgba(255,255,255,0.07);
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 0.8rem; color: var(--muted); flex-shrink: 0;
+  }
+  .lb-avatar-sm {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: var(--navy-light); border: 2px solid rgba(252,178,47,0.3);
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 0.8rem; flex-shrink: 0;
+  }
+  .lb-info { flex: 1; min-width: 0; }
+  .lb-name { font-weight: 600; font-size: 0.88rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .lb-team { font-size: 0.7rem; color: var(--muted); margin-top: 1px; }
+  .lb-pts { font-family: 'Bebas Neue', sans-serif; font-size: 1.3rem; color: var(--gold); letter-spacing: 1px; flex-shrink: 0; }
+  .lb-pts span { font-family: 'DM Sans', sans-serif; font-size: 0.65rem; color: var(--muted); font-weight: 500; }
+  .lb-row.me { border-color: rgba(252,178,47,0.4); background: rgba(252,178,47,0.07); }
+  .you-badge { background: var(--gold); color: var(--navy-dark); font-size: 0.6rem; font-weight: 700; padding: 1px 6px; border-radius: 4px; text-transform: uppercase; }
+
+  /* ── CHALLENGES ── */
+  .challenge-card {
+    background: var(--navy);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 14px; padding: 1.25rem;
+    margin-bottom: 1rem;
+    animation: fadeIn 0.35s ease;
+  }
+  .challenge-card.active-card { border-color: rgba(252,178,47,0.5); }
+  .ch-header { display: flex; align-items: center; gap: 10px; margin-bottom: 1rem; }
+  .ch-icon {
+    width: 40px; height: 40px; border-radius: 10px;
+    background: rgba(252,178,47,0.15); border: 1px solid rgba(252,178,47,0.3);
+    display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0;
+  }
+  .ch-title { font-weight: 700; font-size: 0.95rem; }
+  .ch-pts-badge {
+    margin-left: auto;
+    background: rgba(252,178,47,0.15); border: 1px solid rgba(252,178,47,0.3);
+    border-radius: 20px; padding: 3px 10px;
+    font-size: 0.75rem; font-weight: 700; color: var(--gold);
+  }
+  .ch-desc { font-size: 0.83rem; color: var(--muted); margin-bottom: 1.1rem; line-height: 1.5; }
+  .ch-status { display: flex; align-items: center; gap: 6px; font-size: 0.75rem; font-weight: 600; }
+  .ch-status.done { color: var(--success); }
+  .ch-status.pending { color: var(--muted); }
+
+  /* ── SUBMIT POINTS ── */
+  .submit-wrap { }
+  .submit-title { font-family: 'Bebas Neue', sans-serif; font-size: 1.6rem; letter-spacing: 2px; color: var(--gold); margin-bottom: 1.25rem; }
+  .points-input-wrap { position: relative; margin-bottom: 1rem; }
+  .points-input-wrap input {
+    width: 100%; padding: 1rem 1rem 1rem 3.5rem;
+    background: var(--navy); border: 2px solid rgba(255,255,255,0.1);
+    border-radius: 12px; color: var(--white);
+    font-family: 'Bebas Neue', sans-serif; font-size: 2rem;
+    letter-spacing: 2px; text-align: center;
+  }
+  .points-input-wrap input:focus { outline: none; border-color: var(--gold); }
+  .points-symbol {
+    position: absolute; left: 1rem; top: 50%; transform: translateY(-50%);
+    font-family: 'Bebas Neue', sans-serif; font-size: 1.2rem; color: var(--gold);
+  }
+
+  /* ── PHOTO UPLOAD ── */
+  .photo-drop {
+    border: 2px dashed rgba(252,178,47,0.35);
+    border-radius: 14px; padding: 2rem 1rem;
+    text-align: center; cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
+    background: rgba(252,178,47,0.03); margin-bottom: 1rem;
+    position: relative; overflow: hidden;
+  }
+  .photo-drop:hover { border-color: var(--gold); background: rgba(252,178,47,0.07); }
+  .photo-drop input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+  .photo-drop-icon { font-size: 2.2rem; margin-bottom: 0.6rem; }
+  .photo-drop-text { font-size: 0.85rem; color: var(--muted); }
+  .photo-drop-text strong { color: var(--gold); }
+  .photo-preview {
+    width: 100%; border-radius: 12px;
+    max-height: 200px; object-fit: cover; display: none;
+    margin-bottom: 1rem; border: 2px solid rgba(252,178,47,0.3);
+  }
+  .photo-preview.visible { display: block; }
+
+  .select-input {
+    width: 100%; padding: 0.75rem 1rem;
+    background: var(--navy); border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 10px; color: var(--white);
+    font-family: 'DM Sans', sans-serif; font-size: 0.9rem;
+    margin-bottom: 1rem; cursor: pointer;
+    appearance: none;
+  }
+  .select-input:focus { outline: none; border-color: var(--gold); }
+  .select-input option { background: var(--navy-dark); }
+
+  .btn-secondary {
+    width: 100%; padding: 0.85rem;
+    background: transparent; border: 1.5px solid rgba(252,178,47,0.4);
+    border-radius: 10px; color: var(--gold);
+    font-family: 'DM Sans', sans-serif; font-weight: 600; font-size: 0.95rem;
+    cursor: pointer; transition: all 0.2s; margin-top: 0.5rem;
+  }
+  .btn-secondary:hover { background: rgba(252,178,47,0.08); border-color: var(--gold); }
+
+  /* ── TOAST ── */
+  #toast {
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px);
+    background: var(--navy); border: 1px solid rgba(252,178,47,0.4);
+    border-radius: 12px; padding: 12px 20px;
+    font-size: 0.85rem; font-weight: 600; color: var(--white);
+    z-index: 999; transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+    white-space: nowrap; box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    pointer-events: none;
+  }
+  #toast.show { transform: translateX(-50%) translateY(0); }
+  #toast.success { border-color: rgba(34,197,94,0.5); }
+
+  /* ── CONFETTI CANVAS ── */
+  #confetti-canvas {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    pointer-events: none; z-index: 998;
+  }
+
+  /* ── PROFILE ── */
+  .profile-header {
+    background: linear-gradient(135deg, var(--navy), var(--navy-light));
+    border: 1px solid rgba(252,178,47,0.2);
+    border-radius: 16px; padding: 1.5rem;
+    text-align: center; margin-bottom: 1rem;
+  }
+  .profile-avatar-lg {
+    width: 72px; height: 72px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--gold), #e8960a);
+    color: var(--navy-dark); font-weight: 700; font-size: 1.8rem;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 1rem;
+    box-shadow: 0 8px 24px rgba(252,178,47,0.35);
+  }
+  .profile-name { font-family: 'Bebas Neue', sans-serif; font-size: 1.6rem; letter-spacing: 2px; }
+  .profile-email { font-size: 0.82rem; color: var(--muted); margin-top: 4px; }
+  .stat-row { display: flex; gap: 12px; margin-top: 1rem; }
+  .stat-box {
+    flex: 1; background: rgba(255,255,255,0.05);
+    border-radius: 10px; padding: 0.75rem; text-align: center;
+  }
+  .stat-num { font-family: 'Bebas Neue', sans-serif; font-size: 1.5rem; color: var(--gold); }
+  .stat-lbl { font-size: 0.65rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
+
+  /* ── VERIFIED BADGE ── */
+  .verified { display: inline-flex; align-items: center; gap: 4px; color: var(--success); font-size: 0.75rem; font-weight: 600; }
+
+  /* shimmer */
+  .shimmer {
+    background: linear-gradient(90deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.03) 100%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+  }
+  @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+
+  .section-label {
+    font-size: 0.68rem; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 1px; color: var(--muted); margin-bottom: 0.75rem;
+  }
+</style>
+</head>
+<body>
+
+<canvas id="confetti-canvas"></canvas>
+<div id="toast">🎉 Points submitted!</div>
+
+<!-- NAV -->
+<nav>
+  <div class="logo">EITO<span> Hunt</span></div>
+  <div class="nav-user" id="nav-user" style="display:none">
+    <div class="nav-avatar" id="nav-initials">JD</div>
+    <span id="nav-name">John</span>
+  </div>
+</nav>
+
+<!-- ═══════════════════════════════════ LOGIN SCREEN -->
+<div class="screen active" id="screen-login">
+  <div class="login-wrap">
+    <div class="login-card" id="login-step1">
+      <div class="login-icon">🏆</div>
+      <h1 class="login-title">EITO Hunt</h1>
+      <p class="login-sub">Sign in with your work email to join</p>
+      <div class="form-group">
+        <label>Email Address</label>
+        <input type="email" id="login-email" placeholder="you@eito.com.my">
+      </div>
+      <div class="form-group">
+        <label>Your Name</label>
+        <input type="text" id="login-name" placeholder="Full name">
+      </div>
+      <button class="btn-primary" onclick="sendOTP()">Send Verification Code →</button>
+      <p class="verify-note">A 6-digit code will be sent to your email</p>
+    </div>
+
+    <div class="login-card" id="login-step2" style="display:none">
+      <div class="login-icon">📧</div>
+      <h1 class="login-title">Check Email</h1>
+      <p class="login-sub">We sent a code to <strong id="otp-email-display" style="color:var(--gold)"></strong></p>
+      <div class="verify-code">
+        <input type="text" maxlength="1" oninput="otpMove(this,0)" id="otp0">
+        <input type="text" maxlength="1" oninput="otpMove(this,1)" id="otp1">
+        <input type="text" maxlength="1" oninput="otpMove(this,2)" id="otp2">
+        <input type="text" maxlength="1" oninput="otpMove(this,3)" id="otp3">
+        <input type="text" maxlength="1" oninput="otpMove(this,4)" id="otp4">
+        <input type="text" maxlength="1" oninput="otpMove(this,5)" id="otp5">
+      </div>
+      <button class="btn-primary" onclick="verifyOTP()">Verify & Enter Hunt</button>
+      <p class="verify-note" style="margin-top:0.75rem">Demo code: <strong style="color:var(--gold)">123456</strong></p>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════ MAIN APP -->
+<div class="screen" id="screen-app">
+  <div class="tab-bar">
+    <button class="tab-btn active" onclick="showTab('leaderboard',this)">🏆 Board</button>
+    <button class="tab-btn" onclick="showTab('challenges',this)">🎯 Tasks</button>
+    <button class="tab-btn" onclick="showTab('submit',this)">✏️ Points</button>
+    <button class="tab-btn" onclick="showTab('photo',this)">📷 Photo</button>
+    <button class="tab-btn" onclick="showTab('profile',this)">👤 Me</button>
+  </div>
+
+  <!-- LEADERBOARD TAB -->
+  <div id="tab-leaderboard" class="content" style="padding-top:1.25rem">
+    <div class="lb-header">
+      <span class="lb-title">Leaderboard</span>
+      <div class="live-badge"><div class="live-dot"></div> Live</div>
+    </div>
+
+    <div class="podium">
+      <div class="podium-item">
+        <div class="podium-avatar">RZ</div>
+        <div class="podium-name">Razif</div>
+        <div class="podium-score" style="color:var(--rank2)">1,240</div>
+        <div class="podium-block">2</div>
+      </div>
+      <div class="podium-item">
+        <div class="podium-avatar"><span class="crown">👑</span>CL</div>
+        <div class="podium-name">Claire</div>
+        <div class="podium-score">1,580</div>
+        <div class="podium-block">1</div>
+      </div>
+      <div class="podium-item">
+        <div class="podium-avatar">AM</div>
+        <div class="podium-name">Ahmad</div>
+        <div class="podium-score" style="color:var(--rank3)">1,100</div>
+        <div class="podium-block">3</div>
+      </div>
+    </div>
+
+    <p class="section-label">All Participants</p>
+    <div class="lb-list" id="lb-list"></div>
+  </div>
+
+  <!-- CHALLENGES TAB -->
+  <div id="tab-challenges" class="content" style="display:none;padding-top:1.25rem">
+    <p class="section-label">Today's Challenges</p>
+    <div id="challenge-list"></div>
+  </div>
+
+  <!-- SUBMIT POINTS TAB -->
+  <div id="tab-submit" class="content" style="display:none;padding-top:1.25rem">
+    <div class="submit-title">Submit Points</div>
+    <p class="section-label">Challenge</p>
+    <select class="select-input" id="submit-challenge">
+      <option value="">Select a challenge...</option>
+      <option value="riddle">🧩 Company Riddle (50 pts)</option>
+      <option value="trivia">📚 EITO Trivia (30 pts)</option>
+      <option value="photo">📸 Photo Challenge (80 pts)</option>
+      <option value="location">📍 Location Check-in (40 pts)</option>
+      <option value="bonus">⭐ Bonus Task (100 pts)</option>
+    </select>
+    <p class="section-label">Points Earned</p>
+    <div class="points-input-wrap">
+      <span class="points-symbol">PTS</span>
+      <input type="number" id="points-val" value="50" min="0" max="500" placeholder="000">
+    </div>
+    <p class="section-label">Proof / Notes (optional)</p>
+    <div class="form-group">
+      <input type="text" placeholder="Add a note or reference..." id="submit-note" style="border-radius:10px;background:var(--navy);border:1px solid rgba(255,255,255,0.12);color:var(--white);padding:0.75rem 1rem;width:100%;font-family:'DM Sans',sans-serif;font-size:0.9rem;">
+    </div>
+    <button class="btn-primary" onclick="submitPoints()">Submit Points 🎯</button>
+    <button class="btn-secondary" onclick="showTab('photo', document.querySelectorAll('.tab-btn')[3])">📷 Add Photo Instead</button>
+  </div>
+
+  <!-- PHOTO TAB -->
+  <div id="tab-photo" class="content" style="display:none;padding-top:1.25rem">
+    <div class="submit-title">Photo Proof</div>
+    <p class="section-label">Challenge</p>
+    <select class="select-input">
+      <option value="">Select a challenge...</option>
+      <option value="photo">📸 Photo Challenge (80 pts)</option>
+      <option value="location">📍 Location Check-in (40 pts)</option>
+      <option value="bonus">⭐ Bonus Task (100 pts)</option>
+    </select>
+    <p class="section-label">Upload Photo</p>
+    <img id="photo-preview-img" class="photo-preview" src="" alt="Preview">
+    <div class="photo-drop" id="photo-drop">
+      <input type="file" accept="image/*" capture="environment" onchange="previewPhoto(this)">
+      <div class="photo-drop-icon">📷</div>
+      <div class="photo-drop-text"><strong>Tap to take photo</strong> or upload from gallery</div>
+    </div>
+    <button class="btn-primary" onclick="submitPhoto()">Submit Photo ✓</button>
+  </div>
+
+  <!-- PROFILE TAB -->
+  <div id="tab-profile" class="content" style="display:none;padding-top:1.25rem">
+    <div class="profile-header">
+      <div class="profile-avatar-lg" id="profile-avatar-lg">CL</div>
+      <div class="profile-name" id="profile-name-lg">Claire</div>
+      <div class="profile-email" id="profile-email-lg">claire@eito.com.my</div>
+      <div style="margin-top:8px"><span class="verified">✓ Email Verified</span></div>
+      <div class="stat-row">
+        <div class="stat-box"><div class="stat-num" id="profile-pts">1,580</div><div class="stat-lbl">Points</div></div>
+        <div class="stat-box"><div class="stat-num">3</div><div class="stat-lbl">Tasks Done</div></div>
+        <div class="stat-box"><div class="stat-num">#1</div><div class="stat-lbl">Rank</div></div>
+      </div>
+    </div>
+    <p class="section-label">My Submissions</p>
+    <div id="my-submissions"></div>
+    <button class="btn-secondary" onclick="logout()" style="margin-top:1rem">Sign Out</button>
+  </div>
+</div>
+
+<script>
+// ── DATA ──────────────────────────────────────────────────────────────────
+let currentUser = null;
+let userPoints = 1580;
+
+const players = [
+  { name: 'Claire',   initials: 'CL', pts: 1580, team: 'NPI Team',   me: true  },
+  { name: 'Razif',    initials: 'RZ', pts: 1240, team: 'TE Team',    me: false },
+  { name: 'Ahmad',    initials: 'AM', pts: 1100, team: 'SQM Team',   me: false },
+  { name: 'Nurul',    initials: 'NU', pts:  940, team: 'NPI Team',   me: false },
+  { name: 'Kevin',    initials: 'KV', pts:  880, team: 'TE Team',    me: false },
+  { name: 'Siti',     initials: 'SI', pts:  720, team: 'SQM Team',   me: false },
+  { name: 'Marcus',   initials: 'MR', pts:  650, team: 'TE Team',    me: false },
+];
+
+const challenges = [
+  { icon: '🧩', title: 'Company Riddle', desc: 'Solve the riddle about EITO\'s founding year and core values.', pts: 50,  done: true  },
+  { icon: '📚', title: 'EITO Trivia',    desc: 'Answer 5 questions about EITO\'s products and milestones.',   pts: 30,  done: true  },
+  { icon: '📸', title: 'Photo Challenge', desc: 'Take a team selfie at the main lobby with your whole team.',  pts: 80,  done: false },
+  { icon: '📍', title: 'Location Check-in', desc: 'Check in at 3 different locations around the EITO office.', pts: 40, done: false },
+  { icon: '⭐', title: 'Bonus Task',     desc: 'Complete the secret bonus task revealed by the event host.',   pts: 100, done: false },
+];
+
+const mySubmissions = [
+  { label: 'Company Riddle', pts: 50, time: '9:14 AM', status: 'approved' },
+  { label: 'EITO Trivia',    pts: 30, time: '10:02 AM', status: 'approved' },
+];
+
+// ── OTP / LOGIN ──────────────────────────────────────────────────────────
+function sendOTP() {
+  const email = document.getElementById('login-email').value.trim();
+  const name  = document.getElementById('login-name').value.trim();
+  if (!email || !email.includes('@')) { showToast('⚠️ Enter a valid email', false); return; }
+  if (!name) { showToast('⚠️ Enter your name', false); return; }
+  currentUser = { email, name, initials: name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2) };
+  document.getElementById('otp-email-display').textContent = email;
+  document.getElementById('login-step1').style.display = 'none';
+  document.getElementById('login-step2').style.display = 'block';
+  document.getElementById('otp0').focus();
+  showToast('📧 Code sent! (use 123456)');
+}
+
+function otpMove(el, idx) {
+  if (el.value.length === 1 && idx < 5) document.getElementById('otp'+(idx+1)).focus();
+  if (idx === 5) {
+    const code = Array.from({length:6},(_,i)=>document.getElementById('otp'+i).value).join('');
+    if (code.length === 6) verifyOTP();
+  }
+}
+
+function verifyOTP() {
+  const code = Array.from({length:6},(_,i)=>document.getElementById('otp'+i).value).join('');
+  if (code !== '123456') { showToast('❌ Wrong code, try 123456', false); return; }
+  enterApp();
+}
+
+function enterApp() {
+  document.getElementById('screen-login').classList.remove('active');
+  document.getElementById('screen-app').classList.add('active');
+  document.getElementById('nav-user').style.display = 'flex';
+  document.getElementById('nav-initials').textContent = currentUser.initials;
+  document.getElementById('nav-name').textContent = currentUser.name.split(' ')[0];
+  document.getElementById('profile-avatar-lg').textContent = currentUser.initials;
+  document.getElementById('profile-name-lg').textContent   = currentUser.name;
+  document.getElementById('profile-email-lg').textContent  = currentUser.email;
+  buildLeaderboard(); buildChallenges(); buildSubmissions();
+  launchConfetti();
+  showToast('🎉 Welcome to EITO Hunt!');
+}
+
+function logout() {
+  currentUser = null;
+  document.getElementById('screen-app').classList.remove('active');
+  document.getElementById('screen-login').classList.add('active');
+  document.getElementById('nav-user').style.display = 'none';
+  document.getElementById('login-step1').style.display = 'block';
+  document.getElementById('login-step2').style.display = 'none';
+  document.getElementById('login-email').value = '';
+  document.getElementById('login-name').value = '';
+  Array.from({length:6},(_,i)=>{ document.getElementById('otp'+i).value=''; });
+}
+
+// ── BUILD UI ─────────────────────────────────────────────────────────────
+function buildLeaderboard() {
+  const sorted = [...players].sort((a,b)=>b.pts-a.pts);
+  const list = document.getElementById('lb-list');
+  list.innerHTML = '';
+  sorted.forEach((p, i) => {
+    const row = document.createElement('div');
+    row.className = 'lb-row' + (p.me ? ' me' : '');
+    row.style.animationDelay = (i * 0.06) + 's';
+    row.innerHTML = `
+      <div class="lb-rank">${i+1}</div>
+      <div class="lb-avatar-sm">${p.initials}</div>
+      <div class="lb-info">
+        <div class="lb-name">${p.name} ${p.me ? '<span class="you-badge">You</span>' : ''}</div>
+        <div class="lb-team">${p.team}</div>
+      </div>
+      <div class="lb-pts">${p.pts.toLocaleString()} <span>pts</span></div>
+    `;
+    list.appendChild(row);
+  });
+}
+
+function buildChallenges() {
+  const list = document.getElementById('challenge-list');
+  list.innerHTML = '';
+  challenges.forEach(c => {
+    const card = document.createElement('div');
+    card.className = 'challenge-card' + (c.done ? '' : ' active-card');
+    card.innerHTML = `
+      <div class="ch-header">
+        <div class="ch-icon">${c.icon}</div>
+        <div class="ch-title">${c.title}</div>
+        <div class="ch-pts-badge">+${c.pts} pts</div>
+      </div>
+      <p class="ch-desc">${c.desc}</p>
+      <div class="ch-status ${c.done ? 'done' : 'pending'}">
+        ${c.done ? '✓ Completed' : '○ Not submitted yet'}
+      </div>
+    `;
+    list.appendChild(card);
+  });
+}
+
+function buildSubmissions() {
+  const list = document.getElementById('my-submissions');
+  list.innerHTML = '';
+  mySubmissions.forEach(s => {
+    const item = document.createElement('div');
+    item.style.cssText = 'background:var(--navy);border:1px solid rgba(255,255,255,0.07);border-radius:10px;padding:0.75rem 1rem;margin-bottom:8px;display:flex;align-items:center;gap:12px;';
+    item.innerHTML = `
+      <div style="flex:1">
+        <div style="font-weight:600;font-size:0.85rem">${s.label}</div>
+        <div style="font-size:0.7rem;color:var(--muted);margin-top:2px">${s.time}</div>
+      </div>
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:1.1rem;color:var(--gold)">+${s.pts}</div>
+      <div style="font-size:0.7rem;font-weight:600;color:var(--success);background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.25);padding:2px 8px;border-radius:6px;">✓ ${s.status}</div>
+    `;
+    list.appendChild(item);
+  });
+}
+
+// ── TABS ─────────────────────────────────────────────────────────────────
+function showTab(id, btn) {
+  document.querySelectorAll('[id^="tab-"]').forEach(t => { t.style.display='none'; });
+  document.getElementById('tab-'+id).style.display = 'block';
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+}
+
+// ── SUBMIT POINTS ────────────────────────────────────────────────────────
+function submitPoints() {
+  const ch  = document.getElementById('submit-challenge').value;
+  const pts = parseInt(document.getElementById('points-val').value) || 0;
+  if (!ch)   { showToast('⚠️ Select a challenge', false); return; }
+  if (pts<=0){ showToast('⚠️ Enter valid points', false); return; }
+
+  userPoints += pts;
+  players.find(p=>p.me).pts = userPoints;
+  document.getElementById('profile-pts').textContent = userPoints.toLocaleString();
+  buildLeaderboard();
+  mySubmissions.unshift({ label: document.getElementById('submit-challenge').options[document.getElementById('submit-challenge').selectedIndex].text.split(' (')[0], pts, time: new Date().toLocaleTimeString('en-MY',{hour:'2-digit',minute:'2-digit'}), status: 'pending' });
+  buildSubmissions();
+  document.getElementById('submit-challenge').value = '';
+  document.getElementById('points-val').value = '50';
+  document.getElementById('submit-note').value = '';
+  showToast(`🎯 +${pts} points submitted!`);
+  launchConfetti();
+}
+
+// ── PHOTO ────────────────────────────────────────────────────────────────
+function previewPhoto(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const img = document.getElementById('photo-preview-img');
+    img.src = e.target.result; img.classList.add('visible');
+    document.getElementById('photo-drop').style.display = 'none';
+  };
+  reader.readAsDataURL(file);
+}
+
+function submitPhoto() {
+  const img = document.getElementById('photo-preview-img');
+  if (!img.classList.contains('visible')) { showToast('📷 Take a photo first', false); return; }
+  img.classList.remove('visible');
+  document.getElementById('photo-drop').style.display = 'block';
+  userPoints += 80; players.find(p=>p.me).pts = userPoints;
+  document.getElementById('profile-pts').textContent = userPoints.toLocaleString();
+  buildLeaderboard();
+  showToast('📸 Photo submitted! +80 pts');
+  launchConfetti();
+}
+
+// ── TOAST ────────────────────────────────────────────────────────────────
+let toastTimer;
+function showToast(msg, success=true) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'show' + (success ? ' success' : '');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { t.className = ''; }, 2800);
+}
+
+// ── CONFETTI ─────────────────────────────────────────────────────────────
+function launchConfetti() {
+  const canvas = document.getElementById('confetti-canvas');
+  const ctx = canvas.getContext('2d');
+  canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+  const colors = ['#fcb22f','#103C61','#ffffff','#e8960a','#1a5080','#ffd700'];
+  const pieces = Array.from({length:80}, () => ({
+    x: Math.random() * canvas.width, y: -20,
+    r: Math.random()*5+3, c: colors[Math.floor(Math.random()*colors.length)],
+    vx: (Math.random()-0.5)*4, vy: Math.random()*4+2,
+    va: (Math.random()-0.5)*0.2, a: Math.random()*Math.PI*2,
+    life: 1
+  }));
+  let frame;
+  function draw() {
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    let alive = false;
+    pieces.forEach(p => {
+      p.x+=p.vx; p.y+=p.vy; p.a+=p.va; p.life-=0.008; p.vy+=0.05;
+      if (p.life<=0||p.y>canvas.height) return;
+      alive = true;
+      ctx.save(); ctx.globalAlpha = p.life;
+      ctx.translate(p.x,p.y); ctx.rotate(p.a);
+      ctx.fillStyle = p.c;
+      ctx.fillRect(-p.r,-p.r/2,p.r*2,p.r);
+      ctx.restore();
+    });
+    if (alive) frame = requestAnimationFrame(draw);
+    else ctx.clearRect(0,0,canvas.width,canvas.height);
+  }
+  cancelAnimationFrame(frame); draw();
+}
+</script>
+</body>
+</html>
